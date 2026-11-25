@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Universal Google Sheets Live Dashboard — Sky Blue Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Smooth Text & Logo Intro Splash Screen -->
+  <div class="intro-splash" id="introSplash" aria-hidden="false">
+    <div class="intro-stage">
+      <div class="intro-logo-box">
+        <svg class="tmc-logo-svg" viewBox="0 0 540 280" width="100%" height="100%" role="img" aria-label="TMC THAI METROLOGY CALIBRATE CO., LTD.">
+  <!-- Outer Rounded Dark Navy Border -->
+  <rect x="14" y="14" width="512" height="252" rx="44" ry="44" fill="#ffffff" stroke="#0c135a" stroke-width="14"/>
+
+  <!-- Striped Slab-Serif Letters: T M C -->
+  <g fill="#0c135a">
+    <!-- Letter T (striped slab-serif) -->
+    <path d="M 48 64 L 166 64 L 166 106 L 146 106 L 146 86 L 122 86 L 122 184 L 138 184 C 144 184 148 188 148 194 L 148 202 L 66 202 L 66 194 C 66 188 70 184 76 184 L 92 184 L 92 86 L 68 86 L 68 106 L 48 106 Z"/>
+
+    <!-- Letter M (striped slab-serif) -->
+    <path d="M 180 64 L 222 64 L 252 146 L 282 64 L 324 64 L 324 72 C 324 78 320 82 314 82 L 304 82 L 304 184 L 316 184 C 322 184 326 188 326 194 L 326 202 L 266 202 L 266 194 C 266 188 270 184 276 184 L 282 184 L 282 102 L 248 198 L 240 198 L 204 102 L 204 184 L 210 184 C 216 184 220 188 220 194 L 220 202 L 178 202 L 178 194 C 178 188 182 184 188 184 L 190 184 L 190 82 L 180 82 Z"/>
+
+    <!-- Letter C (striped slab-serif open C) -->
+    <path d="M 484 64 L 484 108 L 464 108 L 462 92 C 454 83 439 79 422 79 C 392 79 374 100 374 133 C 374 166 392 187 422 187 C 441 187 456 181 464 170 L 466 154 L 486 154 L 486 200 C 468 205 446 208 420 208 C 374 208 344 177 344 133 C 344 89 374 58 420 58 C 446 58 468 61 484 64 Z"/>
+  </g>
+
+  <!-- Vertical White Stripes Cutting Through TMC Letters (Signature Reference Motif) -->
+  <g fill="#ffffff">
+    <!-- Stripes across T -->
+    <rect x="64" y="60" width="6" height="146"/>
+    <rect x="82" y="60" width="5" height="146"/>
+    <rect x="104" y="60" width="5" height="146"/>
+    <rect x="128" y="60" width="5" height="146"/>
+    <rect x="150" y="60" width="5" height="50"/>
+
+    <!-- Stripes across M -->
+    <rect x="196" y="60" width="5" height="146"/>
+    <rect x="215" y="60" width="5" height="146"/>
+    <rect x="235" y="60" width="5" height="146"/>
+    <rect x="256" y="60" width="5" height="146"/>
+    <rect x="277" y="60" width="5" height="146"/>
+    <rect x="296" y="60" width="5" height="146"/>
+    <rect x="313" y="60" width="5" height="146"/>
+
+    <!-- Stripes across C -->
+    <rect x="360" y="60" width="5" height="152"/>
+    <rect x="380" y="54" width="5" height="160"/>
+    <rect x="401" y="54" width="5" height="160"/>
+    <rect x="422" y="54" width="5" height="160"/>
+    <rect x="443" y="54" width="5" height="160"/>
+    <rect x="464" y="54" width="5" height="160"/>
+    <rect x="479" y="54" width="5" height="160"/>
+  </g>
+
+  <!-- Horizontal Red Rule -->
+  <line x1="48" y1="216" x2="492" y2="216" stroke="#e11d26" stroke-width="5" stroke-linecap="square"/>
+
+  <!-- Company Subtext -->
+  <text x="270" y="242" text-anchor="middle" fill="#e11d26" font-family="'Instrument Sans', 'Inter', sans-serif" font-weight="700" font-size="15.5" letter-spacing="1.4">
+    THAI METROLOGY CALIBRATE CO., LTD.
+  </text>
+</svg>
+      </div>
+      <div class="intro-text-group">
+        <div class="intro-eyebrow">METROLOGY &amp; CALIBRATION SYSTEM</div>
+        <h2 class="intro-main-title">THAI METROLOGY CALIBRATE</h2>
+        <p class="intro-sub-text">Real-time sheet operations &amp; analytics dashboard</p>
+      </div>
+      <div class="intro-progress-track">
+        <div class="intro-progress-bar" id="introProgressBar"></div>
+      </div>
+    </div>
+    <button type="button" class="intro-skip-btn" id="skipIntroBtn">Skip</button>
+  </div>
+
+  <!-- Full-Screen Sequential 2-Step Login Gate (Step 1: Password -> Step 2: iPhone Passwords / Authenticator OTP) -->
+  <div class="login-gate" id="loginGate" style="display: none;">
+    <div class="login-card">
+      <div class="login-brand-header">
+        <div class="login-logo-wrap">
+          <svg class="tmc-logo-svg" viewBox="0 0 540 280" width="100%" height="100%" role="img" aria-label="TMC THAI METROLOGY CALIBRATE CO., LTD.">
+  <!-- Outer Rounded Dark Navy Border -->
+  <rect x="14" y="14" width="512" height="252" rx="44" ry="44" fill="#ffffff" stroke="#0c135a" stroke-width="14"/>
+
+  <!-- Striped Slab-Serif Letters: T M C -->
+  <g fill="#0c135a">
+    <!-- Letter T (striped slab-serif) -->
+    <path d="M 48 64 L 166 64 L 166 106 L 146 106 L 146 86 L 122 86 L 122 184 L 138 184 C 144 184 148 188 148 194 L 148 202 L 66 202 L 66 194 C 66 188 70 184 76 184 L 92 184 L 92 86 L 68 86 L 68 106 L 48 106 Z"/>
+
+    <!-- Letter M (striped slab-serif) -->
+    <path d="M 180 64 L 222 64 L 252 146 L 282 64 L 324 64 L 324 72 C 324 78 320 82 314 82 L 304 82 L 304 184 L 316 184 C 322 184 326 188 326 194 L 326 202 L 266 202 L 266 194 C 266 188 270 184 276 184 L 282 184 L 282 102 L 248 198 L 240 198 L 204 102 L 204 184 L 210 184 C 216 184 220 188 220 194 L 220 202 L 178 202 L 178 194 C 178 188 182 184 188 184 L 190 184 L 190 82 L 180 82 Z"/>
+
+    <!-- Letter C (striped slab-serif open C) -->
+    <path d="M 484 64 L 484 108 L 464 108 L 462 92 C 454 83 439 79 422 79 C 392 79 374 100 374 133 C 374 166 392 187 422 187 C 441 187 456 181 464 170 L 466 154 L 486 154 L 486 200 C 468 205 446 208 420 208 C 374 208 344 177 344 133 C 344 89 374 58 420 58 C 446 58 468 61 484 64 Z"/>
+  </g>
+
+  <!-- Vertical White Stripes Cutting Through TMC Letters (Signature Reference Motif) -->
+  <g fill="#ffffff">
+    <!-- Stripes across T -->
+    <rect x="64" y="60" width="6" height="146"/>
+    <rect x="82" y="60" width="5" height="146"/>
+    <rect x="104" y="60" width="5" height="146"/>
+    <rect x="128" y="60" width="5" height="146"/>
+    <rect x="150" y="60" width="5" height="50"/>
+
+    <!-- Stripes across M -->
+    <rect x="196" y="60" width="5" height="146"/>
+    <rect x="215" y="60" width="5" height="146"/>
+    <rect x="235" y="60" width="5" height="146"/>
+    <rect x="256" y="60" width="5" height="146"/>
+    <rect x="277" y="60" width="5" height="146"/>
+    <rect x="296" y="60" width="5" height="146"/>
+    <rect x="313" y="60" width="5" height="146"/>
+
+    <!-- Stripes across C -->
+    <rect x="360" y="60" width="5" height="152"/>
+    <rect x="380" y="54" width="5" height="160"/>
+    <rect x="401" y="54" width="5" height="160"/>
+    <rect x="422" y="54" width="5" height="160"/>
+    <rect x="443" y="54" width="5" height="160"/>
+    <rect x="464" y="54" width="5" height="160"/>
+    <rect x="479" y="54" width="5" height="160"/>
+  </g>
+
+  <!-- Horizontal Red Rule -->
+  <line x1="48" y1="216" x2="492" y2="216" stroke="#e11d26" stroke-width="5" stroke-linecap="square"/>
+
+  <!-- Company Subtext -->
+  <text x="270" y="242" text-anchor="middle" fill="#e11d26" font-family="'Instrument Sans', 'Inter', sans-serif" font-weight="700" font-size="15.5" letter-spacing="1.4">
+    THAI METROLOGY CALIBRATE CO., LTD.
+  </text>
+</svg>
+        </div>
+        <div class="step-indicator-pills">
+          <span class="step-pill active" id="loginStepPill1">1. รหัสผ่าน</span>
+          <span class="step-divider"></span>
+          <span class="step-pill" id="loginStepPill2">2. รหัส OTP 6 หลัก</span>
+        </div>
+        <h1 class="login-title" id="loginGateHeading">Sign in to Dashboard</h1>
+        <p class="login-subtitle" id="loginGateSubheading">ขั้นตอนที่ 1: กรอกรหัสผ่านหลักเพื่อดำเนินการต่อ</p>
+      </div>
+
+      <!-- STEP 1: Password Verification -->
+      <form id="gateStep1Form" class="login-form">
+        <div class="form-group">
+          <label for="gatePasswordInput">รหัสผ่าน (Password)</label>
+          <input type="password" id="gatePasswordInput" class="clean-input" required placeholder="กรอกรหัสผ่านเข้าใช้งาน" autocomplete="current-password">
+        </div>
+
+        <div class="login-error-msg" id="gateStep1Error" style="display: none;"></div>
+
+        <button type="submit" class="cta-dark-pill login-submit-btn" id="gateStep1SubmitBtn">ถัดไป &rarr;</button>
+      </form>
+
+      <!-- STEP 2A: 2FA Already Bound -> Clean 6-Digit iPhone / Authenticator OTP Prompt (No QR shown) -->
+      <form id="gateStep2VerifyForm" class="login-form" style="display: none;">
+        <div class="step2-device-badge">
+          <span>ยืนยันตัวตนชั้นที่ 2 ด้วยแอป Passwords บน iPhone หรือ Authenticator</span>
+        </div>
+
+        <div class="form-group">
+          <div class="otp-label-row">
+            <label for="gateOtpInput">รหัส OTP 6 หลัก</label>
+            <span class="otp-countdown-badge" id="otpCountdownBadge">30s</span>
+          </div>
+          <input type="text" id="gateOtpInput" class="clean-input otp-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required placeholder="000000" autocomplete="one-time-code">
+        </div>
+
+        <div class="login-error-msg" id="gateStep2Error" style="display: none;"></div>
+
+        <div class="step2-btn-row">
+          <button type="button" class="pill-outline-btn" id="gateBackToStep1Btn">&larr; ย้อนกลับ</button>
+          <button type="submit" class="cta-dark-pill" style="flex: 1;" id="gateStep2SubmitBtn">ยืนยันเข้าสู่ Dashboard</button>
+        </div>
+
+        <div class="step2-qr-toggle-wrap">
+          <button type="button" class="link-action-btn" id="toggleStep2QrBtn">สแกน QR Code / ผูกเครื่องใหม่</button>
+        </div>
+
+        <div class="step2-qr-drawer" id="step2QrDrawer" style="display: none;">
+          <div class="totp-qr-box compact">
+            <canvas id="step2VerifyQrCanvas" width="220" height="220"></canvas>
+            <div class="totp-key-panel">
+              <div class="totp-key-label" id="step2QrModeLabel">Setup Key สำหรับสแกนเพิ่มเครื่องใหม่:</div>
+              <div class="totp-key-code masked-secret" id="step2VerifySecretDisplay" data-secret="">••••••••••••••••</div>
+              <div class="totp-btn-row">
+                <button type="button" class="pill-outline-btn" id="revealStep2KeyBtn">แสดง Key</button>
+                <button type="button" class="pill-outline-btn" id="copyStep2KeyBtn">คัดลอก Key</button>
+                <button type="button" class="pill-outline-btn" id="rotateStep2KeyBtn">สร้าง Key ใหม่</button>
+              </div>
+              <div class="totp-timer-note" id="step2QrHintText">สแกนด้วยแอป Passwords บน iPhone หรือ Authenticator แล้วกรอกรหัส 6 หลักด้านบน</div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- STEP 2B: First-Time 2FA Enrollment (Shown ONLY after passing Step 1 Password when 2FA is not yet bound) -->
+      <form id="gateStep2EnrollForm" class="login-form" style="display: none;">
+        <div class="login-status-note">
+          <strong>วิธีสแกนในแอป Authenticator / iPhone Passwords:</strong><br>
+          • <strong>Google Authenticator:</strong> กดปุ่ม <strong>+</strong> มุมขวาล่าง &rarr; เลือก <strong>สแกนคิวอาร์โค้ด</strong><br>
+          • <strong>iPhone (แอป Passwords):</strong> กด <strong>+</strong> &rarr; เลือก <strong>สแกนคิวอาร์โค้ด</strong> (หรือกด <strong>ป้อนรหัสตั้งค่า</strong> แล้ววาง Setup Key)
+        </div>
+
+        <div class="totp-qr-box compact">
+          <canvas id="firstEnrollQrCanvas" width="220" height="220"></canvas>
+          <div class="totp-key-panel">
+            <div class="totp-key-label">Setup Key:</div>
+            <div class="totp-key-code masked-secret" id="firstEnrollSecretDisplay" data-secret="">••••••••••••••••</div>
+            <div class="totp-btn-row">
+              <button type="button" class="pill-outline-btn" id="revealFirstEnrollKeyBtn">แสดง Key</button>
+              <button type="button" class="pill-outline-btn" id="copyFirstEnrollKeyBtn">คัดลอก Key</button>
+              <button type="button" class="pill-outline-btn" id="regenFirstEnrollKeyBtn">สุ่ม Key ใหม่</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="otp-label-row">
+            <label for="firstEnrollOtpInput">กรอกรหัส OTP 6 หลักจาก iPhone เพื่อผูกอุปกรณ์ *</label>
+            <span class="otp-countdown-badge" id="enrollCountdownBadge">30s</span>
+          </div>
+          <input type="text" id="firstEnrollOtpInput" class="clean-input otp-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required placeholder="000000" autocomplete="one-time-code">
+        </div>
+
+        <div class="login-error-msg" id="gateEnrollError" style="display: none;"></div>
+
+        <div class="step2-btn-row">
+          <button type="button" class="pill-outline-btn" id="gateEnrollBackBtn">&larr; ย้อนกลับ</button>
+          <button type="submit" class="cta-dark-pill" style="flex: 1;">ผูกอุปกรณ์และเข้าสู่ Dashboard</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<div class="app-shell intro-hidden-state" id="appShell">
+    <!-- Top Floating Pill Navigation Bar -->
+    <header class="mira-topbar">
+      <div class="brand-lockup">
+        <div class="navbar-tmc-logo" title="THAI METROLOGY CALIBRATE CO., LTD.">
+          <svg class="tmc-logo-svg" viewBox="0 0 540 280" width="100%" height="100%" role="img" aria-label="TMC THAI METROLOGY CALIBRATE CO., LTD.">
+  <!-- Outer Rounded Dark Navy Border -->
+  <rect x="14" y="14" width="512" height="252" rx="44" ry="44" fill="#ffffff" stroke="#0c135a" stroke-width="14"/>
+
+  <!-- Striped Slab-Serif Letters: T M C -->
+  <g fill="#0c135a">
+    <!-- Letter T (striped slab-serif) -->
+    <path d="M 48 64 L 166 64 L 166 106 L 146 106 L 146 86 L 122 86 L 122 184 L 138 184 C 144 184 148 188 148 194 L 148 202 L 66 202 L 66 194 C 66 188 70 184 76 184 L 92 184 L 92 86 L 68 86 L 68 106 L 48 106 Z"/>
+
+    <!-- Letter M (striped slab-serif) -->
+    <path d="M 180 64 L 222 64 L 252 146 L 282 64 L 324 64 L 324 72 C 324 78 320 82 314 82 L 304 82 L 304 184 L 316 184 C 322 184 326 188 326 194 L 326 202 L 266 202 L 266 194 C 266 188 270 184 276 184 L 282 184 L 282 102 L 248 198 L 240 198 L 204 102 L 204 184 L 210 184 C 216 184 220 188 220 194 L 220 202 L 178 202 L 178 194 C 178 188 182 184 188 184 L 190 184 L 190 82 L 180 82 Z"/>
+
+    <!-- Letter C (striped slab-serif open C) -->
+    <path d="M 484 64 L 484 108 L 464 108 L 462 92 C 454 83 439 79 422 79 C 392 79 374 100 374 133 C 374 166 392 187 422 187 C 441 187 456 181 464 170 L 466 154 L 486 154 L 486 200 C 468 205 446 208 420 208 C 374 208 344 177 344 133 C 344 89 374 58 420 58 C 446 58 468 61 484 64 Z"/>
+  </g>
+
+  <!-- Vertical White Stripes Cutting Through TMC Letters (Signature Reference Motif) -->
+  <g fill="#ffffff">
+    <!-- Stripes across T -->
+    <rect x="64" y="60" width="6" height="146"/>
+    <rect x="82" y="60" width="5" height="146"/>
+    <rect x="104" y="60" width="5" height="146"/>
+    <rect x="128" y="60" width="5" height="146"/>
+    <rect x="150" y="60" width="5" height="50"/>
+
+    <!-- Stripes across M -->
+    <rect x="196" y="60" width="5" height="146"/>
+    <rect x="215" y="60" width="5" height="146"/>
+    <rect x="235" y="60" width="5" height="146"/>
+    <rect x="256" y="60" width="5" height="146"/>
+    <rect x="277" y="60" width="5" height="146"/>
+    <rect x="296" y="60" width="5" height="146"/>
+    <rect x="313" y="60" width="5" height="146"/>
+
+    <!-- Stripes across C -->
+    <rect x="360" y="60" width="5" height="152"/>
+    <rect x="380" y="54" width="5" height="160"/>
+    <rect x="401" y="54" width="5" height="160"/>
+    <rect x="422" y="54" width="5" height="160"/>
+    <rect x="443" y="54" width="5" height="160"/>
+    <rect x="464" y="54" width="5" height="160"/>
+    <rect x="479" y="54" width="5" height="160"/>
+  </g>
+
+  <!-- Horizontal Red Rule -->
+  <line x1="48" y1="216" x2="492" y2="216" stroke="#e11d26" stroke-width="5" stroke-linecap="square"/>
+
+  <!-- Company Subtext -->
+  <text x="270" y="242" text-anchor="middle" fill="#e11d26" font-family="'Instrument Sans', 'Inter', sans-serif" font-weight="700" font-size="15.5" letter-spacing="1.4">
+    THAI METROLOGY CALIBRATE CO., LTD.
+  </text>
+</svg>
+        </div>
+        <span class="brand-name" id="brandSheetTitle">TMC Calibration</span>
+      </div>
+
+      <!-- Center Navigation Tabs -->
+      <nav class="nav-pill-group" aria-label="Primary Navigation">
+        <button type="button" class="nav-tab active" data-view="overview">Overview</button>
+        <button type="button" class="nav-tab" data-view="jobs">Data Table</button>
+        <button type="button" class="nav-tab" data-view="analytics">Summary</button>
+      </nav>
+
+      <!-- Right Action Pills -->
+      <div class="nav-actions">
+        <!-- Dynamic Tab Switcher (Appears automatically when Sheet has tabs) -->
+        <select id="sheetTabSelect" class="sheet-tab-pill" style="display: none;" title="เลือกชีตย่อย (Tab) ใน Google Sheet"></select>
+
+        <button type="button" class="sync-status-pill" id="refreshNowBtn" disabled title="ซิงก์ข้อมูลล่าสุดจาก Google Sheet">
+          <span class="status-dot offline" id="syncDot"></span>
+          <span id="syncText">Not connected</span>
+        </button>
+
+        <button type="button" class="role-pill viewer" id="adminToggleBtn" title="สลับโหมดผู้ดูแลระบบ (Admin Mode)">
+          <span class="role-indicator"></span>
+          <span id="roleLabel">Viewer Mode</span>
+        </button>
+
+        <button type="button" class="user-pill" id="openModalBtn">
+          <span class="avatar-circle">GS</span>
+          <span id="navConnectLabel">Connect Sheet</span>
+        </button>
+
+        <button type="button" class="cta-dark-pill admin-only" id="openAddJobBtn" disabled>Add new row</button>
+        <button type="button" class="pill-outline-btn" id="gateLogoutBtn" title="ล็อกหน้าจอและออกจากระบบ">Logout</button>
+      </div>
+    </header>
+
+    <!-- Editorial Hero Header -->
+    <section class="hero-header">
+      <div class="hero-left">
+        <div class="eyebrow-row">
+          <span class="eyebrow-dot"></span>
+          <span id="currentDateEyebrow">UNIVERSAL REAL-TIME GOOGLE SHEETS SYNC</span>
+        </div>
+        <h1 class="editorial-title">
+          Live sheet overview. <span class="muted-headline">Any columns &amp; rows.</span>
+        </h1>
+      </div>
+
+      <div class="hero-right-metrics">
+        <div class="top-metric">
+          <div class="metric-num" id="heroTopRows">0</div>
+          <div class="metric-caption"><i class="cap-dot sky"></i> Total rows</div>
+        </div>
+        <div class="top-metric">
+          <div class="metric-num muted-num" id="heroTopCols">0</div>
+          <div class="metric-caption"><i class="cap-dot cyan"></i> Columns</div>
+        </div>
+        <div class="top-metric">
+          <div class="metric-num muted-num" id="heroTopFiltered">0</div>
+          <div class="metric-caption"><i class="cap-dot amber"></i> Showing</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OVERVIEW BENTO GRID -->
+    <div id="viewOverview" class="view-section active">
+      <!-- Top Bento Row -->
+      <section class="bento-top-grid">
+        <!-- Left White Card: Dynamic Breakdown of Top Categories -->
+        <div class="bento-card white-card">
+          <div class="card-head-row">
+            <div>
+              <h2 id="breakdownCardTitle">Workload metrics to watch</h2>
+              <p class="card-subtitle" id="breakdownCardSub">เลือกคอลัมน์และค่าที่ต้องการแสดงในการ์ดสรุปยอดได้เอง</p>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <select id="groupByColSelect" class="mini-pill-select" style="display: none;" title="เลือกคอลัมน์สำหรับสรุปยอด KPI"></select>
+              <button type="button" class="pill-outline-btn" id="customizeCardsBtn" style="display: none;" title="กำหนดค่าที่จะโชว์ในการ์ดทั้ง 3 ช่อง">กำหนดการ์ด</button>
+              <button type="button" class="pill-outline-btn" id="jumpToAllJobsBtn">See all <span id="seeAllCount">0</span></button>
+            </div>
+          </div>
+
+          <div class="sub-metrics-4col" id="dynamicSubMetricsGrid">
+            <!-- Populated dynamically based on actual Sheet columns & rows -->
+          </div>
+        </div>
+
+        <!-- Right Sky Blue Gradient Feature Card -->
+        <div class="bento-card sky-gradient-card">
+          <div class="card-head-row">
+            <div>
+              <h2 class="text-white" id="heroCardTitle">Active sheet coverage</h2>
+              <p class="card-subtitle text-sky-soft" id="slaSubText">Connect any Google Sheet URL or Web App URL to visualize live data.</p>
+            </div>
+            <span class="dark-glass-pill" id="slaPendingPill">0 Cols</span>
+          </div>
+
+          <div class="hero-stat-display">
+            <span class="giant-figure" id="heroCompletionRate">0</span>
+            <span class="giant-unit" id="heroCompletionUnit">total records</span>
+          </div>
+
+          <div class="equalizer-scale" id="slaEqualizerScale"></div>
+          <div class="equalizer-labels">
+            <span>0%</span>
+            <span>25%</span>
+            <span>50%</span>
+            <span>75%</span>
+            <span>100%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom Bento Row -->
+      <section class="bento-bottom-grid">
+        <!-- Card 1: Donut + Column Completeness Bars -->
+        <div class="bento-card white-card">
+          <div class="card-head-row">
+            <div>
+              <h2>Data density &amp; column fill</h2>
+              <p class="card-subtitle">Filter match ratio &amp; non-empty cell rate per column</p>
+            </div>
+            <span class="status-tag tag-sky" id="throughputBadge">Offline</span>
+          </div>
+
+          <div class="donut-bars-split">
+            <div class="donut-wrapper" id="statusDonutContainer"></div>
+            <div class="donut-stats">
+              <div class="d-stat-block">
+                <span>Filtered rows</span>
+                <strong id="donutActiveCount">0</strong>
+              </div>
+              <div class="d-stat-block">
+                <span>Fill rate</span>
+                <strong id="donutOnTimeRate">0%</strong>
+              </div>
+            </div>
+            <div class="mini-weekly-bars" id="weeklyBarChart"></div>
+          </div>
+        </div>
+
+        <!-- Card 2: Recent / Top Records Preview -->
+        <div class="bento-card white-card">
+          <div class="card-head-row">
+            <div>
+              <h2>Latest records preview</h2>
+              <p class="card-subtitle">Top rows from the connected sheet</p>
+            </div>
+            <button type="button" class="text-arrow-btn" id="viewAllPlanBtn"><span id="planRatioLabel">0/0</span> &rarr;</button>
+          </div>
+
+          <div class="priority-pill-list" id="priorityQueueList"></div>
+        </div>
+
+        <!-- Card 3: Secondary Dimension Filter & Quick Tools -->
+        <div class="bento-card white-card flex-between-col">
+          <div>
+            <div class="card-head-row">
+              <div>
+                <h2 id="secondaryDimTitle">Quick group filter</h2>
+                <p class="card-subtitle" id="secondaryDimSub">Click any group below to filter table</p>
+              </div>
+              <span class="avatar-circle small">DATA</span>
+            </div>
+
+            <div class="tech-chip-list" id="overviewTechList"></div>
+          </div>
+
+          <div class="quick-tool-bar">
+            <button type="button" class="tool-pill-btn" id="overviewExportBtn" disabled>Export CSV</button>
+            <button type="button" class="tool-pill-btn" id="overviewSyncBtn" disabled>Sync Now</button>
+            <button type="button" class="tool-pill-btn primary admin-only" id="overviewAddBtn" disabled>+ New Row</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- SUMMARY ANALYTICS VIEW (Activated when clicking 'Summary' tab) -->
+    <div id="viewSummary" class="view-section" style="display: none;">
+      <!-- Summary Control Header Card -->
+      <section class="bento-card white-card">
+        <div class="card-head-row" style="margin-bottom: 14px;">
+          <div>
+            <h2>Deep-Dive Sheet Summary &amp; Cross-Tab Analytics</h2>
+            <p class="card-subtitle">วิเคราะห์ภาพรวมเชิงลึกจากข้อมูลจริงใน Sheet แยกตามรายเดือน หมวดหมู่หลัก หมวดหมู่รอง และสถิติตัวเลข</p>
+          </div>
+          <div class="summary-toolbar">
+            <select id="sumPrimaryColSelect" class="clean-select" title="เลือกคอลัมน์หลักสำหรับจัดอันดับ"></select>
+            <select id="sumSecondaryColSelect" class="clean-select" title="เลือกคอลัมน์รองสำหรับเปรียบเทียบ"></select>
+            <select id="sumDateColSelect" class="clean-select" title="เลือกคอลัมน์วันที่สำหรับดูแนวโน้มรายเดือน"></select>
+            <button type="button" class="cta-dark-pill" id="exportSummaryCsvBtn" disabled>Export Summary CSV</button>
+          </div>
+        </div>
+
+        <!-- 4 Executive Summary Highlights -->
+        <div class="summary-highlights-grid" id="summaryHighlightsGrid"></div>
+      </section>
+
+      <!-- Row 2: Monthly Trend Bar Chart + Top Primary Dimension Ranking -->
+      <section class="summary-2col-grid">
+        <div class="bento-card white-card">
+          <div class="card-head-row">
+            <div>
+              <h2 id="sumMonthlyTitle">แนวโน้มปริมาณข้อมูลรายเดือน (Monthly Trend)</h2>
+              <p class="card-subtitle" id="sumMonthlySub">สรุปจำนวนรายการแยกตามเดือนจากคอลัมน์วันที่</p>
+            </div>
+            <span class="status-tag tag-sky" id="sumMonthsCountBadge">0 Months</span>
+          </div>
+          <div class="monthly-chart-wrap" id="sumMonthlyChart"></div>
+        </div>
+
+        <div class="bento-card white-card">
+          <div class="card-head-row">
+            <div>
+              <h2 id="sumNumericTitle">สรุปสถิติคอลัมน์ตัวเลข (Numeric Column Stats)</h2>
+              <p class="card-subtitle">ผลรวม (Sum) ค่าเฉลี่ย (Avg) ค่าต่ำสุด (Min) และสูงสุด (Max) อัตโนมัติ</p>
+            </div>
+            <span class="status-tag tag-mint" id="sumNumericCountBadge">Auto</span>
+          </div>
+          <div class="numeric-stats-list" id="sumNumericStatsList"></div>
+        </div>
+      </section>
+
+      <!-- Row 3: Two Detailed Ranking Tables with Progress Bars (Primary Dimension & Secondary Dimension) -->
+      <section class="summary-2col-grid">
+        <div class="bento-card white-card">
+          <div class="card-head-row">
+            <div>
+              <h2 id="sumPrimaryRankTitle">อันดับสรุปตามคอลัมน์หลัก (Top Breakdown)</h2>
+              <p class="card-subtitle">คลิกที่รายการใดก็ได้เพื่อกรองดูข้อมูลจริงในตารางด้านล่างทันที</p>
+            </div>
+            <span class="sub-count-pill" id="sumPrimaryUniqueBadge">0 groups</span>
+          </div>
+          <div class="rank-list-container" id="sumPrimaryRankList"></div>
+        </div>
+
+        <div class="bento-card white-card">
+          <div class="card-head-row">
+            <div>
+              <h2 id="sumSecondaryRankTitle">อันดับสรุปตามคอลัมน์รอง (Secondary Breakdown)</h2>
+              <p class="card-subtitle">คลิกที่รายการใดก็ได้เพื่อกรองดูข้อมูลจริงในตารางด้านล่างทันที</p>
+            </div>
+            <span class="sub-count-pill" id="sumSecondaryUniqueBadge">0 groups</span>
+          </div>
+          <div class="rank-list-container" id="sumSecondaryRankList"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- DYNAMIC DATA DIRECTORY SECTION (Adapts automatically to ANY number of columns & rows) -->
+    <section class="bento-card white-card table-section" id="mainJobTableSection">
+      <div class="card-head-row">
+        <div>
+          <div class="title-with-role">
+            <h2 id="directoryTitle">Sheet data directory</h2>
+            <span class="mode-tag viewer" id="directoryModeBadge">View Only</span>
+          </div>
+          <p class="card-subtitle">Universal search across all columns &bull; Dynamic sorting &amp; live sync</p>
+        </div>
+        <div class="table-meta-right">
+          <span class="sub-count-pill" id="filteredCountBadge">Showing 0 of 0 rows</span>
+          <button type="button" class="pill-outline-btn" id="selectTableColsBtn" disabled title="เลือกเปิด/ปิดคอลัมน์ที่จะแสดงในตาราง">เลือกคอลัมน์ (<span id="visibleColsCountBadge">0/0</span>)</button>
+          <button type="button" class="pill-outline-btn" id="tableExportCsvBtn" disabled>Export CSV</button>
+          <button type="button" class="pill-outline-btn collapse-toggle-btn" id="toggleDirectoryBtn" aria-expanded="true">
+            <span id="toggleDirectoryText">Hide Directory</span>
+            <svg id="toggleDirectoryChevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="directory-collapsible-body" id="directoryBody">
+        <div class="filter-toolbar">
+          <div class="search-input-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="searchInput" placeholder="ค้นหาข้อมูลได้ทุกคอลัมน์ใน Sheet...">
+            <button type="button" class="clear-search" id="clearSearchBtn" style="display: none;" aria-label="ล้างคำค้นหา">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="filter-controls">
+            <div class="row-limit-box" id="rowLimitControlBox" style="display: none;" title="กำหนดแถวสุดท้ายที่ต้องการแสดง (เช่น 5687 = ซ่อนฟอร์มเปล่าตั้งแต่ 5688 เป็นต้นไป และเมื่อมีคนกรอกข้อมูลลูกค้าลงในแถว 5688 ระบบจะขยับจุดตัดขึ้นมาแสดง 5688 ให้อัตโนมัติทันที)">
+              <label for="rowLimitInput">ถึง Row</label>
+              <input type="number" id="rowLimitInput" min="1" step="1" placeholder="ทั้งหมด">
+              <label class="skip-blank-toggle" title="ซ่อนแถวฟอร์มที่ยังไม่ได้กรอกข้อมูลลูกค้า/วันที่">
+                <input type="checkbox" id="hideTemplateBlanksCheck" checked>
+                <span>ซ่อนฟอร์มเปล่า</span>
+              </label>
+              <button type="button" class="clear-limit-btn" id="clearRowLimitBtn" style="display: none;" title="แสดงทุกแถว (ไม่จำกัด)">&times;</button>
+            </div>
+
+            <select id="dynamicColFilterSelect" class="clean-select" style="display: none;">
+              <option value="ALL">ทุกค่าในคอลัมน์หลัก (All)</option>
+            </select>
+
+            <button type="button" class="pill-outline-btn" id="resetFilterBtn">Reset</button>
+          </div>
+        </div>
+
+        <!-- Top Synchronized Horizontal Scrollbar & Slide Controls -->
+        <div class="top-table-slider-wrap" id="topTableSliderWrap" style="display: none;">
+          <button type="button" class="slider-step-btn" id="slideTableLeftBtn" title="เลื่อนตารางไปทางซ้าย">&lsaquo;</button>
+          <div class="top-table-scroll" id="topTableScroll">
+            <div class="top-table-scroll-spacer" id="topTableScrollSpacer"></div>
+          </div>
+          <button type="button" class="slider-step-btn" id="slideTableRightBtn" title="เลื่อนตารางไปทางขวา">&rsaquo;</button>
+        </div>
+
+        <div class="table-scroll" id="mainTableScroll">
+          <table class="mira-table" id="mainDataTable">
+            <thead id="dynamicTableHead">
+              <tr>
+                <th>สถานะการเชื่อมต่อ</th>
+              </tr>
+            </thead>
+            <tbody id="jobTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Bar (20 Rows per Page + Previous / Next + Page Jump) -->
+        <div class="pagination-bar" id="paginationBar" style="display: none;">
+          <div class="pagination-info" id="paginationInfo">แสดงรายการที่ 1 - 20 จากทั้งหมด 0 รายการ</div>
+
+          <div class="pagination-controls">
+            <button type="button" class="page-btn" id="firstPageBtn" title="หน้าแรก">&laquo; First</button>
+            <button type="button" class="page-btn" id="prevPageBtn" title="หน้าก่อนหน้า">&lsaquo; Prev</button>
+
+            <div class="page-numbers" id="pageNumbersWrap"></div>
+
+            <button type="button" class="page-btn" id="nextPageBtn" title="หน้าถัดไป">Next &rsaquo;</button>
+            <button type="button" class="page-btn" id="lastPageBtn" title="หน้าสุดท้าย">Last &raquo;</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal 1: Flexible Google Sheet Connection (Supports Apps Script URL OR Direct Google Sheet Link) -->
+  <div class="modal-backdrop" id="apiModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>เชื่อมต่อ Google Sheet (รองรับทุกรูปแบบตาราง)</h3>
+        <button type="button" class="close-btn" id="closeModalBtn" aria-label="ปิดหน้าต่าง">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>วางลิงก์ <strong>Google Apps Script Web App URL</strong> (<code>.../exec</code>) หรือวาง <strong>ลิงก์ Google Sheet โดยตรง</strong> (<code>https://docs.google.com/spreadsheets/d/...</code> ที่เปิดแชร์ Anyone with the link) ระบบจะอ่านคอลัมน์และแถวทั้งหมดให้อัตโนมัติ</p>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label for="apiUrlInput">ลิงก์ Google Sheet หรือ Web App URL *</label>
+          <input type="url" id="apiUrlInput" class="clean-input" placeholder="https://docs.google.com/spreadsheets/d/... หรือ https://script.google.com/macros/s/.../exec">
+        </div>
+        <div class="form-group">
+          <label for="optionalTabInput">ชื่อชีตย่อย (Tab Name — เว้นว่างไว้เพื่อดึงชีตแรกอัตโนมัติ)</label>
+          <input type="text" id="optionalTabInput" class="clean-input" placeholder="เช่น Job_Data หรือ Sheet1">
+        </div>
+        <div class="modal-hint">หมายเหตุ: หากใช้ลิงก์ Google Sheet โดยตรงจะดูข้อมูลได้แบบ Real-Time แต่หากต้องการให้หน้า Admin บันทึก/แก้ไขกลับลง Sheet ได้ด้วย ให้ใช้ลิงก์ Apps Script Web App URL</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="pill-outline-btn" id="disconnectApiBtn">ยกเลิกการเชื่อมต่อ</button>
+        <button type="button" class="cta-dark-pill" id="saveApiBtn">เชื่อมต่อและดึงข้อมูล</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Dynamic Add / Edit Row Form (Builds inputs automatically from Sheet headers!) -->
+  <div class="modal-backdrop" id="jobFormModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="jobModalTitle">เพิ่มแถวข้อมูลใหม่</h3>
+        <button type="button" class="close-btn" id="closeJobModalBtn" aria-label="ปิดหน้าต่าง">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="jobForm">
+        <div class="modal-body form-grid" id="dynamicFormFields">
+          <!-- Generated dynamically based on exact columns of the connected Google Sheet -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="pill-outline-btn" id="cancelJobBtn">ยกเลิก</button>
+          <button type="submit" class="cta-dark-pill" id="saveJobBtn">บันทึกลง Google Sheet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Confirm Delete Row -->
+  <div class="modal-backdrop" id="deleteConfirmModal">
+    <div class="modal-card modal-sm">
+      <div class="modal-header">
+        <h3>ยืนยันการลบข้อมูล</h3>
+        <button type="button" class="close-btn" id="closeDeleteModalBtn" aria-label="ปิดหน้าต่าง">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>คุณต้องการลบข้อมูลรายการ <strong class="mono-sky" id="deleteTargetJobNo">-</strong> ออกจาก Google Sheet ใช่หรือไม่?</p>
+        <div class="modal-hint">การลบนี้จะลบแถวข้อมูลออกจากชีตทันที</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="pill-outline-btn" id="cancelDeleteBtn">ยกเลิก</button>
+        <button type="button" class="btn-danger" id="confirmDeleteBtn">ยืนยันการลบ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Admin Login -->
+  <div class="modal-backdrop" id="adminAuthModal">
+    <div class="modal-card modal-sm">
+      <div class="modal-header">
+        <h3>เข้าสู่โหมดผู้ดูแลระบบ (Admin Mode)</h3>
+        <button type="button" class="close-btn" id="closeAdminModalBtn" aria-label="ปิดหน้าต่าง">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="adminAuthForm">
+        <div class="modal-body">
+          <p>กรอกรหัสผ่านผู้ดูแลระบบเพื่อเปิดสิทธิ์เพิ่ม แก้ไข และลบแถวข้อมูลในตาราง</p>
+          <div class="form-group">
+            <label for="adminPinInput">รหัสผ่าน Admin (ค่าเริ่มต้น: 1234)</label>
+            <input type="password" id="adminPinInput" class="clean-input" required placeholder="กรอกรหัสผ่าน Admin" autocomplete="current-password">
+          </div>
+          <div class="modal-hint">สามารถเปลี่ยนรหัสผ่าน Admin ได้หลังจากเข้าสู่ระบบแล้ว</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="pill-outline-btn" id="cancelAdminBtn">ยกเลิก</button>
+          <button type="submit" class="cta-dark-pill">ยืนยันเข้าสู่โหมด Admin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 5: Admin Manage / Security & 2FA Settings -->
+  <div class="modal-backdrop" id="adminManageModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>การจัดการสิทธิ์และความปลอดภัย (Admin Security)</h3>
+        <button type="button" class="close-btn" id="closeAdminManageBtn" aria-label="ปิดหน้าต่าง">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>ขณะนี้คุณกำลังใช้งานใน <strong>Admin Mode</strong> สามารถจัดการความปลอดภัยของระบบและข้อมูลในตารางได้</p>
+
+        <!-- Admin-Only 2FA & Login Password Actions -->
+        <div class="admin-security-panel">
+          <div class="sec-row">
+            <div>
+              <strong>การยืนยันตัวตน 2 ชั้น (2FA OTP 6 หลัก)</strong>
+              <div class="sec-sub" id="admin2faStatusText">สถานะ: ยังไม่ได้เปิดใช้งาน (สแกนผูกกับ iPhone ของคุณ)</div>
+            </div>
+            <button type="button" class="cta-dark-pill" id="openTotpSetupFromAdminBtn">ตั้งค่า / สแกน QR</button>
+          </div>
+          <div class="sec-row">
+            <div>
+              <strong>รหัสผ่านหน้าเข้าสู่ระบบ (Login Password)</strong>
+              <div class="sec-sub">เปลี่ยนรหัสผ่านหลักสำหรับเข้าหน้า Dashboard</div>
+            </div>
+            <button type="button" class="pill-outline-btn" id="openPassChangeFromAdminBtn">เปลี่ยนรหัสผ่าน</button>
+          </div>
+        </div>
+
+        <form id="changePinForm" style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-light);">
+          <div class="form-group">
+            <label for="newAdminPinInput">ตั้งรหัสปลดล็อก Admin Mode ใหม่ (อย่างน้อย 4 ตัวอักษร)</label>
+            <input type="password" id="newAdminPinInput" class="clean-input" minlength="4" placeholder="กรอกรหัสปลดล็อก Admin ใหม่หากต้องการเปลี่ยน">
+          </div>
+          <div class="modal-footer" style="justify-content: space-between; margin-top: 14px;">
+            <button type="button" class="btn-danger" id="logoutAdminBtn">ออกจากโหมด Admin</button>
+            <button type="submit" class="cta-dark-pill">บันทึกรหัส Admin</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Customize KPI Metric Cards -->
+  <div class="modal-backdrop" id="customizeCardsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>กำหนดค่าที่จะแสดงในการ์ดสรุปยอด</h3>
+        <button type="button" class="close-btn" id="closeCustomizeModalBtn" aria-label="ปิดหน้าต่าง">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="customizeCardsForm">
+        <div class="modal-body">
+          <p>เลือกคอลัมน์และค่าที่ต้องการให้นับจำนวนแสดงผลในการ์ดช่องที่ 2, 3 และ 4 (การ์ดช่องแรกจะแสดงจำนวนแถวทั้งหมดเสมอ)</p>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="modalGroupColSelect">1. เลือกคอลัมน์อ้างอิง (Column)</label>
+            <select id="modalGroupColSelect" class="clean-input"></select>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="cardSlot1Select">การ์ดช่องที่ 2 (สีฟ้า)</label>
+              <select id="cardSlot1Select" class="clean-input"></select>
+            </div>
+            <div class="form-group">
+              <label for="cardSlot2Select">การ์ดช่องที่ 3 (สีเขียวมิ้นต์)</label>
+              <select id="cardSlot2Select" class="clean-input"></select>
+            </div>
+            <div class="form-group full-width">
+              <label for="cardSlot3Select">การ์ดช่องที่ 4 (สีส้ม/แดง)</label>
+              <select id="cardSlot3Select" class="clean-input"></select>
+            </div>
+          </div>
+          <div class="modal-hint">สามารถเปลี่ยนค่าได้ทันทีโดยคลิกที่มุมขวาบนของการ์ดแต่ละใบได้เช่นกัน</div>
+        </div>
+        <div class="modal-footer" style="justify-content: space-between;">
+          <button type="button" class="pill-outline-btn" id="resetCustomCardsBtn">ค่าเริ่มต้นอัตโนมัติ</button>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="pill-outline-btn" id="cancelCustomizeBtn">ยกเลิก</button>
+            <button type="submit" class="cta-dark-pill">บันทึกการแสดงผล</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 7: Table Column Visibility Picker -->
+  <div class="modal-backdrop" id="columnPickerModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>เลือกคอลัมน์ที่ต้องการแสดงในตาราง</h3>
+        <button type="button" class="close-btn" id="closeColPickerBtn" aria-label="ปิดหน้าต่าง">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="col-picker-toolbar">
+          <input type="text" id="colPickerSearchInput" class="clean-input" placeholder="ค้นหาชื่อคอลัมน์..." style="flex: 1;">
+          <button type="button" class="pill-outline-btn" id="selectAllColsBtn">เลือกทั้งหมด</button>
+          <button type="button" class="pill-outline-btn" id="clearAllColsBtn">ล้างทั้งหมด</button>
+        </div>
+        <div class="col-checkbox-grid" id="colCheckboxGrid"></div>
+        <div class="modal-hint" id="colPickerCountHint">เลือกแสดง 0 จาก 0 คอลัมน์ (ระบบจะจำค่าที่เลือกไว้ให้โดยอัตโนมัติ)</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="pill-outline-btn" id="cancelColPickerBtn">ยกเลิก</button>
+        <button type="button" class="cta-dark-pill" id="applyColPickerBtn">ยืนยันการแสดงผล</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 8: Admin-Only 2FA TOTP Setup (Scan with iPhone Passwords / Authenticator & Verify Code) -->
+  <div class="modal-backdrop" id="totpSetupModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>ผูกบัญชี 2FA กับ iPhone / Authenticator (เฉพาะ Admin)</h3>
+        <button type="button" class="close-btn" id="closeTotpModalBtn" aria-label="ปิดหน้าต่าง">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="verifyAndEnableTotpForm">
+        <div class="modal-body">
+          <p>1. ใช้แอป <strong>Passwords (รหัสผ่าน)</strong> บน iPhone หรือ <strong>Google Authenticator</strong> สแกน QR Code ด้านล่าง (หรือคัดลอก Setup Key ไปเพิ่มในแอป)</p>
+          <div class="totp-qr-box">
+            <canvas id="totpQrCanvas" width="220" height="220"></canvas>
+            <div class="totp-key-panel">
+              <div class="totp-key-label">Setup Key (เก็บเป็นความลับส่วนตัว):</div>
+              <div class="totp-key-code" id="totpSecretDisplay">-</div>
+              <div class="totp-btn-row">
+                <button type="button" class="pill-outline-btn" id="copyTotpKeyBtn">คัดลอก Key</button>
+                <button type="button" class="pill-outline-btn" id="regenTotpKeyBtn">สร้าง Key ใหม่</button>
+              </div>
+              <div class="totp-timer-note">รอบเปลี่ยนรหัสบนมือถือ: <span id="totpPreviewSec">30</span>s</div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 14px;">
+            <label for="confirmSetupOtpInput">2. กรอกรหัส OTP 6 หลักที่ขึ้นบน iPhone ของคุณเพื่อยืนยันเปิดใช้งาน 2FA *</label>
+            <input type="text" id="confirmSetupOtpInput" class="clean-input otp-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required placeholder="000000" autocomplete="one-time-code">
+          </div>
+          <div class="modal-feedback" id="totpSetupFeedback" style="display: none;"></div>
+        </div>
+        <div class="modal-footer" style="justify-content: space-between;">
+          <button type="button" class="btn-danger" id="disable2faBtn" style="display: none;">ปิดใช้งาน 2FA</button>
+          <div style="display: flex; gap: 8px; margin-left: auto;">
+            <button type="button" class="pill-outline-btn" id="cancelTotpSetupBtn">ยกเลิก</button>
+            <button type="submit" class="cta-dark-pill">ยืนยันและเปิดใช้งาน 2FA</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 9: Change Login Password -->
+  <div class="modal-backdrop" id="changeGatePassModal">
+    <div class="modal-card modal-sm">
+      <div class="modal-header">
+        <h3>เปลี่ยนรหัสผ่านเข้าสู่ระบบ</h3>
+        <button type="button" class="close-btn" id="closeChangeGatePassBtn" aria-label="ปิดหน้าต่าง">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="changeGatePassForm">
+        <div class="modal-body">
+          <p>เปลี่ยนรหัสผ่านสำหรับหน้าล็อกอินเข้าใช้งานระบบ (รหัสผ่านเริ่มต้นคือ <code>1234</code>)</p>
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label for="currentGatePassInput">รหัสผ่านปัจจุบัน *</label>
+            <input type="password" id="currentGatePassInput" class="clean-input" required placeholder="กรอกรหัสผ่านปัจจุบัน">
+          </div>
+          <div class="form-group">
+            <label for="newGatePassInput">รหัสผ่านใหม่ (อย่างน้อย 4 ตัวอักษร) *</label>
+            <input type="password" id="newGatePassInput" class="clean-input" required minlength="4" placeholder="กรอกรหัสผ่านใหม่">
+          </div>
+          <div class="modal-feedback" id="changeGatePassFeedback" style="display: none;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="pill-outline-btn" id="cancelChangeGatePassBtn">ยกเลิก</button>
+          <button type="submit" class="cta-dark-pill">บันทึกรหัสผ่านใหม่</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
