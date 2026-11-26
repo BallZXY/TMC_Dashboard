@@ -929,12 +929,13 @@ let isConnected = false;
 let isSavingToSheet = false;
 
 let selectedGroupCol = safeGetLocal("GSHEET_GROUP_COL") || "";
-let selectedGroupValue = "ALL";
-let customPinnedSlots = []; // เก็บค่าที่ผู้ใช้เลือกโชว์ในการ์ดช่องที่ 2, 3, 4
+let activeCardFilter = null;
+let activeCardFilter = null; // { col: string, val: string } when a specific KPI card is clicked
+let customCardConfigs = []; // [{ col: string, val: string }, ...] for Card 2, Card 3, Card 4
 
-function loadPinnedSlots(sheetKey, colName) {
+function loadCustomCardConfigs(sheetKey) {
   try {
-    const raw = safeGetLocal(`GSHEET_PINNED_SLOTS_${sheetKey}_${colName}`);
+    const raw = safeGetLocal(`GSHEET_CARD_CONFIGS_V2_${sheetKey}`);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) return parsed;
@@ -943,10 +944,22 @@ function loadPinnedSlots(sheetKey, colName) {
   return [];
 }
 
-function savePinnedSlots(sheetKey, colName, slots) {
+function saveCustomCardConfigs(sheetKey, configs) {
   try {
-    safeSetLocal(`GSHEET_PINNED_SLOTS_${sheetKey}_${colName}`, JSON.stringify(slots));
+    safeSetLocal(`GSHEET_CARD_CONFIGS_V2_${sheetKey}`, JSON.stringify(configs));
   } catch (_) {}
+}
+
+function getColumnValueCounts(colName, scopedRows) {
+  const counts = {};
+  scopedRows.forEach(r => {
+    const val = String(r[colName] ?? "").trim() || "(ว่าง)";
+    counts[val] = (counts[val] || 0) + 1;
+  });
+  const sortedGroups = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const nonEmptyGroups = sortedGroups.filter(([val]) => val !== "(ว่าง)");
+  const orderedValues = [...nonEmptyGroups.map(([v]) => v), ...sortedGroups.filter(([val]) => val === "(ว่าง)").map(([v]) => v)];
+  return { counts, sortedGroups, orderedValues };
 }
 let selectedSecondaryCol = "";
 let activeNavView = "overview"; // "overview" | "jobs" | "analytics"
@@ -1201,7 +1214,7 @@ function detectBestGroupingColumns() {
   if (!selectedGroupCol || !sheetHeaders.includes(selectedGroupCol)) {
     selectedGroupCol = candidates.length > 0 ? candidates[0].col : (sheetHeaders[sheetHeaders.length - 1] || sheetHeaders[0]);
   }
-  customPinnedSlots = loadPinnedSlots(activeTabName || "default", selectedGroupCol);
+  customCardConfigs = loadCustomCardConfigs(activeTabName || "default");
 
   const secondaryCand = candidates.find(c => c.col !== selectedGroupCol);
   selectedSecondaryCol = secondaryCand ? secondaryCand.col : "";
@@ -1387,62 +1400,84 @@ function renderAnalytics() {
     `).join("");
     [0.2, 0.2, 0.2, 0.2].forEach((r, idx) => renderDotRuler(`rulerPlaceholder_${idx}`, r));
   } else {
-    // นับความถี่ของค่าในคอลัมน์ selectedGroupCol
-    const counts = {};
-    scopedRows.forEach(r => {
-      const val = String(r[selectedGroupCol] ?? "").trim() || "(ว่าง)";
-      counts[val] = (counts[val] || 0) + 1;
+    // อัปเดต Dropdown กรองในแถบเครื่องมือตารางตามคอลัมน์หลัก (หรือคอลัมน์ของการ์ดที่ถูกคลิกเลือก)
+    const toolbarFilterCol = (activeCardFilter && sheetHeaders.includes(activeCardFilter.col))
+      ? activeCardFilter.col
+      : selectedGroupCol;
+    const { sortedGroups: toolbarGroups } = getColumnValueCounts(toolbarFilterCol, scopedRows);
+
+    colFilterSelect.style.display = "inline-block";
+    colFilterSelect.innerHTML = `<option value="ALL">ทุกค่าใน ${escapeHtml(toolbarFilterCol)} (All)</option>` +
+      toolbarGroups.map(([val, cnt]) => {
+        const isSel = activeCardFilter && activeCardFilter.col === toolbarFilterCol && activeCardFilter.val === val;
+        return `<option value="${escapeHtml(val)}" ${isSel ? "selected" : ""}>${escapeHtml(val)} (${cnt})</option>`;
+      }).join("");
+
+    // เตรียมค่าเริ่มต้นสำหรับการ์ดช่องที่ 2, 3, 4 (รองรับคอลัมน์แยกอิสระในแต่ละการ์ด!)
+    const defaultColInfo = getColumnValueCounts(selectedGroupCol, scopedRows);
+    const resolvedConfigs = [0, 1, 2].map(slotIdx => {
+      const saved = customCardConfigs[slotIdx];
+      const col = (saved && saved.col && sheetHeaders.includes(saved.col)) ? saved.col : selectedGroupCol;
+      const colInfo = getColumnValueCounts(col, scopedRows);
+      let val = (saved && saved.val && colInfo.orderedValues.includes(saved.val)) ? saved.val : "";
+      if (!val) {
+        // เลือกค่าอันดับต้นๆ ที่ไม่ซ้ำกับช่องก่อนหน้าในคอลัมน์เดียวกัน
+        val = colInfo.orderedValues[slotIdx] || colInfo.orderedValues[0] || "(ว่าง)";
+      }
+      return { col, val, counts: colInfo.counts, orderedValues: colInfo.orderedValues };
     });
 
-    const sortedGroups = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-
-    // อัปเดต Dropdown กรองตามค่าในคอลัมน์หลัก
-    colFilterSelect.style.display = "inline-block";
-    colFilterSelect.innerHTML = `<option value="ALL">ทุกค่าใน ${escapeHtml(selectedGroupCol)} (All)</option>` +
-      sortedGroups.map(([val, cnt]) =>
-        `<option value="${escapeHtml(val)}" ${selectedGroupValue === val ? "selected" : ""}>${escapeHtml(val)} (${cnt})</option>`
-      ).join("");
-
-    // รายชื่อค่าที่ไม่ว่างขึ้นก่อน เพื่อให้ค่าเริ่มต้นไม่เอา "(ว่าง)" มาโชว์ก่อนค่าจริง
-    const nonEmptyGroups = sortedGroups.filter(([val]) => val !== "(ว่าง)");
-    const fallbackOrder = [...nonEmptyGroups, ...sortedGroups.filter(([val]) => val === "(ว่าง)")];
-    const allAvailableValues = sortedGroups.map(([val]) => val);
-
-    // กำหนดค่าที่จะแสดงในการ์ดช่องที่ 2, 3, 4 (ใช้ค่าที่ผู้ใช้ตั้งไว้ หรือค่าเริ่มต้นที่ไม่ว่าง 3 อันดับแรก)
-    const activeSlots = [0, 1, 2].map(slotIdx => {
-      const pinned = customPinnedSlots[slotIdx];
-      if (pinned && allAvailableValues.includes(pinned)) return pinned;
-      return fallbackOrder[slotIdx] ? fallbackOrder[slotIdx][0] : "";
-    }).filter(Boolean);
-
+    const isAllActive = !activeCardFilter;
     const cardsData = [
-      { slotIdx: -1, key: "ALL", title: "Total Records", tag: "All", tagClass: "tag-sky", count: totalRows, desc: `${totalCols} columns detected` }
+      {
+        slotIdx: -1,
+        col: "",
+        val: "ALL",
+        title: "Total Records",
+        tag: "All",
+        tagClass: "tag-sky",
+        count: totalRows,
+        desc: `${totalCols} columns detected`,
+        isActive: isAllActive
+      }
     ];
 
     const tagStyles = ["tag-blue", "tag-mint", "tag-coral"];
-    activeSlots.forEach((val, i) => {
-      const cnt = counts[val] || 0;
+    resolvedConfigs.forEach((cfg, i) => {
+      const cnt = cfg.counts[cfg.val] || 0;
       const pct = totalRows > 0 ? Math.round((cnt / totalRows) * 100) : 0;
+      const isCardActive = Boolean(activeCardFilter && activeCardFilter.col === cfg.col && activeCardFilter.val === cfg.val);
       cardsData.push({
         slotIdx: i,
-        key: val,
-        title: val,
+        col: cfg.col,
+        val: cfg.val,
+        orderedValues: cfg.orderedValues,
+        title: cfg.val,
         tag: `${pct}%`,
         tagClass: tagStyles[i % tagStyles.length],
         count: cnt,
-        desc: `in ${selectedGroupCol}`
+        desc: `in ${cfg.col}`,
+        isActive: isCardActive
       });
     });
 
     cardsData.forEach((c, idx) => {
       const cardEl = document.createElement("div");
-      cardEl.className = `sub-metric-item ${selectedGroupValue === c.key ? "active" : ""}`;
+      cardEl.className = `sub-metric-item ${c.isActive ? "active" : ""}`;
 
       const titleHtml = c.slotIdx === -1
         ? `<span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(c.title)}</span>`
-        : `<select class="card-slot-picker" data-slot="${c.slotIdx}" title="คลิกเพื่อเปลี่ยนค่าที่แสดงในการ์ดนี้">
-            ${allAvailableValues.map(v => `<option value="${escapeHtml(v)}" ${v === c.key ? "selected" : ""}>${escapeHtml(v)}</option>`).join("")}
+        : `<select class="card-slot-picker" data-slot="${c.slotIdx}" title="คลิกเพื่อเปลี่ยนค่า (Value) ที่แสดงในการ์ดนี้">
+            ${c.orderedValues.map(v => `<option value="${escapeHtml(v)}" ${v === c.val ? "selected" : ""}>${escapeHtml(v)}</option>`).join("")}
            </select>`;
+
+      const descHtml = c.slotIdx === -1
+        ? `<div class="sub-desc">${escapeHtml(c.desc)}</div>`
+        : `<div class="sub-desc">
+            <select class="card-col-picker" data-slot="${c.slotIdx}" title="คลิกเพื่อเปลี่ยนคอลัมน์ (Column) ของการ์ดใบนี้">
+              ${sheetHeaders.map(h => `<option value="${escapeHtml(h)}" ${h === c.col ? "selected" : ""}>in ${escapeHtml(h)}</option>`).join("")}
+            </select>
+           </div>`;
 
       cardEl.innerHTML = `
         <div class="sub-top">
@@ -1453,34 +1488,65 @@ function renderAnalytics() {
           <strong>${c.count}</strong>
           <small>rows</small>
         </div>
-        <div class="sub-desc">${escapeHtml(c.desc)}</div>
+        ${descHtml}
         <div class="dot-ruler" id="dynRuler_${idx}"></div>
       `;
 
-      // ถ้าเปลี่ยนค่าจาก Dropdown ในการ์ด ให้บันทึกการตั้งค่าทันทีโดยไม่ทริกเกอร์การคลิกกรองการ์ด
+      // เปลี่ยนค่า (Value) ภายในการ์ดใบนี้โดยเฉพาะ
       const slotPicker = cardEl.querySelector(".card-slot-picker");
       if (slotPicker) {
         slotPicker.addEventListener("click", (e) => e.stopPropagation());
         slotPicker.addEventListener("change", (e) => {
           e.stopPropagation();
           const sIdx = Number(slotPicker.dataset.slot);
-          const nextSlots = [...activeSlots];
-          nextSlots[sIdx] = e.target.value;
-          customPinnedSlots = nextSlots;
-          savePinnedSlots(activeTabName || "default", selectedGroupCol, customPinnedSlots);
-          if (selectedGroupValue !== "ALL") selectedGroupValue = e.target.value;
+          const nextConfigs = resolvedConfigs.map(rc => ({ col: rc.col, val: rc.val }));
+          nextConfigs[sIdx].val = e.target.value;
+          customCardConfigs = nextConfigs;
+          saveCustomCardConfigs(activeTabName || "default", customCardConfigs);
+          if (activeCardFilter && activeCardFilter.col === nextConfigs[sIdx].col) {
+            activeCardFilter = { col: nextConfigs[sIdx].col, val: e.target.value };
+          }
           renderAnalytics();
           renderTable();
-          showToast(`เปลี่ยนการ์ดเป็น "${e.target.value}" แล้ว`);
+          showToast(`เปลี่ยนการ์ดช่องที่ ${sIdx + 2} เป็น "${e.target.value}" แล้ว`);
+        });
+      }
+
+      // เปลี่ยนคอลัมน์ (Column) ภายในการ์ดใบนี้แยกอิสระจากใบอื่น!
+      const colPicker = cardEl.querySelector(".card-col-picker");
+      if (colPicker) {
+        colPicker.addEventListener("click", (e) => e.stopPropagation());
+        colPicker.addEventListener("change", (e) => {
+          e.stopPropagation();
+          const sIdx = Number(colPicker.dataset.slot);
+          const newCol = e.target.value;
+          const newColInfo = getColumnValueCounts(newCol, scopedRows);
+          const defaultValForNewCol = newColInfo.orderedValues[0] || "(ว่าง)";
+          const nextConfigs = resolvedConfigs.map(rc => ({ col: rc.col, val: rc.val }));
+          nextConfigs[sIdx] = { col: newCol, val: defaultValForNewCol };
+          customCardConfigs = nextConfigs;
+          saveCustomCardConfigs(activeTabName || "default", customCardConfigs);
+          if (activeCardFilter) {
+            activeCardFilter = { col: newCol, val: defaultValForNewCol };
+          }
+          renderAnalytics();
+          renderTable();
+          showToast(`เปลี่ยนคอลัมน์ของการ์ดช่องที่ ${sIdx + 2} เป็น "${newCol}" แล้ว`);
         });
       }
 
       cardEl.addEventListener("click", () => {
-        selectedGroupValue = selectedGroupValue === c.key ? "ALL" : c.key;
+        if (c.slotIdx === -1) {
+          activeCardFilter = null;
+        } else {
+          const isSame = activeCardFilter && activeCardFilter.col === c.col && activeCardFilter.val === c.val;
+          activeCardFilter = isSame ? null : { col: c.col, val: c.val };
+        }
         currentPage = 1;
         renderAnalytics();
         renderTable();
       });
+
       metricsGrid.appendChild(cardEl);
       renderDotRuler(`dynRuler_${idx}`, totalRows > 0 ? c.count / totalRows : 0.1);
     });
@@ -1786,9 +1852,9 @@ function renderSummaryView() {
 function getFilteredAndSortedRows() {
   const scopedRows = getScopedRows();
   const filtered = scopedRows.filter(row => {
-    if (selectedGroupCol && selectedGroupValue !== "ALL") {
-      const val = String(row[selectedGroupCol] ?? "").trim() || "(ว่าง)";
-      if (val !== selectedGroupValue) return false;
+    if (activeCardFilter && activeCardFilter.col) {
+      const val = String(row[activeCardFilter.col] ?? "").trim() || "(ว่าง)";
+      if (val !== activeCardFilter.val) return false;
     }
 
     if (selectedSecondaryCol && selectedSecondaryValue !== "ALL") {
@@ -2824,7 +2890,7 @@ document.addEventListener("DOMContentLoaded", () => {
     activeTabName = e.target.value;
     safeSetLocal("GSHEET_TAB_NAME", activeTabName);
     selectedGroupCol = "";
-    selectedGroupValue = "ALL";
+    activeCardFilter = null;
     selectedSecondaryCol = "";
     selectedSecondaryValue = "ALL";
     sumPrimaryCol = "";
@@ -2834,50 +2900,66 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchFromSheet(true);
   });
 
-  // เลือกเปลี่ยนคอลัมน์สำหรับสรุป KPI
+  // เลือกเปลี่ยนคอลัมน์หลักพร้อมกันทั้ง 3 การ์ด (หรือเลือกแยกแต่ละการ์ดได้เอง)
   document.getElementById("groupByColSelect").addEventListener("change", (e) => {
     selectedGroupCol = e.target.value;
     safeSetLocal("GSHEET_GROUP_COL", selectedGroupCol);
-    customPinnedSlots = loadPinnedSlots(activeTabName || "default", selectedGroupCol);
-    selectedGroupValue = "ALL";
+    const colInfo = getColumnValueCounts(selectedGroupCol, getScopedRows());
+    customCardConfigs = [0, 1, 2].map(i => ({
+      col: selectedGroupCol,
+      val: colInfo.orderedValues[i] || colInfo.orderedValues[0] || "(ว่าง)"
+    }));
+    saveCustomCardConfigs(activeTabName || "default", customCardConfigs);
+    activeCardFilter = null;
     currentPage = 1;
     renderAnalytics();
     renderTable();
   });
 
-  // Modal กำหนดค่าที่จะโชว์ในการ์ดทั้ง 3 ช่อง
-  const populateCustomizeModalSelects = (colName) => {
-    const counts = {};
-    rowsData.forEach(r => {
-      const val = String(r[colName] ?? "").trim() || "(ว่าง)";
-      counts[val] = (counts[val] || 0) + 1;
-    });
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const nonEmpty = sorted.filter(([v]) => v !== "(ว่าง)");
-    const ordered = [...nonEmpty, ...sorted.filter(([v]) => v === "(ว่าง)")];
-    const saved = loadPinnedSlots(activeTabName || "default", colName);
-
-    ["cardSlot1Select", "cardSlot2Select", "cardSlot3Select"].forEach((selId, i) => {
-      const selEl = document.getElementById(selId);
-      const defaultVal = (saved[i] && counts[saved[i]]) ? saved[i] : (ordered[i] ? ordered[i][0] : "");
-      selEl.innerHTML = ordered.map(([v, cnt]) =>
-        `<option value="${escapeHtml(v)}" ${v === defaultVal ? "selected" : ""}>${escapeHtml(v)} (${cnt} rows)</option>`
-      ).join("");
-    });
+  // Modal กำหนดคอลัมน์และค่าที่จะโชว์ในการ์ดทั้ง 3 ช่องแบบแยกอิสระ
+  const populateSingleSlotValueSelect = (valSelectId, colName, preferredVal = "") => {
+    const valSel = document.getElementById(valSelectId);
+    if (!valSel) return;
+    const { counts, orderedValues } = getColumnValueCounts(colName, getScopedRows());
+    const chosen = (preferredVal && orderedValues.includes(preferredVal)) ? preferredVal : (orderedValues[0] || "");
+    valSel.innerHTML = orderedValues.map(v =>
+      `<option value="${escapeHtml(v)}" ${v === chosen ? "selected" : ""}>${escapeHtml(v)} (${counts[v] || 0} rows)</option>`
+    ).join("");
   };
 
   document.getElementById("customizeCardsBtn").addEventListener("click", () => {
     if (!isConnected || sheetHeaders.length === 0) return;
-    const colSel = document.getElementById("modalGroupColSelect");
-    colSel.innerHTML = sheetHeaders.map(h =>
-      `<option value="${escapeHtml(h)}" ${h === selectedGroupCol ? "selected" : ""}>${escapeHtml(h)}</option>`
-    ).join("");
-    populateCustomizeModalSelects(selectedGroupCol);
+    const saved = loadCustomCardConfigs(activeTabName || "default");
+    const defaultInfo = getColumnValueCounts(selectedGroupCol, getScopedRows());
+
+    const slotPairs = [
+      { colId: "cardSlot1ColSelect", valId: "cardSlot1Select", idx: 0 },
+      { colId: "cardSlot2ColSelect", valId: "cardSlot2Select", idx: 1 },
+      { colId: "cardSlot3ColSelect", valId: "cardSlot3Select", idx: 2 }
+    ];
+
+    slotPairs.forEach(({ colId, valId, idx }) => {
+      const colSel = document.getElementById(colId);
+      const s = saved[idx];
+      const initCol = (s && s.col && sheetHeaders.includes(s.col)) ? s.col : selectedGroupCol;
+      const initVal = (s && s.val) ? s.val : (defaultInfo.orderedValues[idx] || defaultInfo.orderedValues[0] || "");
+      colSel.innerHTML = sheetHeaders.map(h =>
+        `<option value="${escapeHtml(h)}" ${h === initCol ? "selected" : ""}>${escapeHtml(h)}</option>`
+      ).join("");
+      populateSingleSlotValueSelect(valId, initCol, initVal);
+    });
+
     document.getElementById("customizeCardsModal").classList.add("open");
   });
 
-  document.getElementById("modalGroupColSelect").addEventListener("change", (e) => {
-    populateCustomizeModalSelects(e.target.value);
+  [
+    { colId: "cardSlot1ColSelect", valId: "cardSlot1Select" },
+    { colId: "cardSlot2ColSelect", valId: "cardSlot2Select" },
+    { colId: "cardSlot3ColSelect", valId: "cardSlot3Select" }
+  ].forEach(({ colId, valId }) => {
+    document.getElementById(colId).addEventListener("change", (e) => {
+      populateSingleSlotValueSelect(valId, e.target.value, "");
+    });
   });
 
   document.getElementById("closeCustomizeModalBtn").addEventListener("click", () => {
@@ -2888,12 +2970,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("resetCustomCardsBtn").addEventListener("click", () => {
-    const colName = document.getElementById("modalGroupColSelect").value;
-    safeRemoveLocal(`GSHEET_PINNED_SLOTS_${activeTabName || "default"}_${colName}`);
-    customPinnedSlots = [];
-    selectedGroupCol = colName;
-    safeSetLocal("GSHEET_GROUP_COL", selectedGroupCol);
-    selectedGroupValue = "ALL";
+    safeRemoveLocal(`GSHEET_CARD_CONFIGS_V2_${activeTabName || "default"}`);
+    customCardConfigs = [];
+    activeCardFilter = null;
     document.getElementById("customizeCardsModal").classList.remove("open");
     renderAnalytics();
     renderTable();
@@ -2902,21 +2981,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("customizeCardsForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    const colName = document.getElementById("modalGroupColSelect").value;
-    const s1 = document.getElementById("cardSlot1Select").value;
-    const s2 = document.getElementById("cardSlot2Select").value;
-    const s3 = document.getElementById("cardSlot3Select").value;
-
-    selectedGroupCol = colName;
-    safeSetLocal("GSHEET_GROUP_COL", selectedGroupCol);
-    customPinnedSlots = [s1, s2, s3].filter(Boolean);
-    savePinnedSlots(activeTabName || "default", selectedGroupCol, customPinnedSlots);
-    selectedGroupValue = "ALL";
+    customCardConfigs = [
+      { col: document.getElementById("cardSlot1ColSelect").value, val: document.getElementById("cardSlot1Select").value },
+      { col: document.getElementById("cardSlot2ColSelect").value, val: document.getElementById("cardSlot2Select").value },
+      { col: document.getElementById("cardSlot3ColSelect").value, val: document.getElementById("cardSlot3Select").value }
+    ];
+    saveCustomCardConfigs(activeTabName || "default", customCardConfigs);
+    activeCardFilter = null;
     currentPage = 1;
     document.getElementById("customizeCardsModal").classList.remove("open");
     renderAnalytics();
     renderTable();
-    showToast("บันทึกการตั้งค่าการ์ดสรุปยอดเรียบร้อยแล้ว");
+    showToast("บันทึกการตั้งค่าคอลัมน์และค่าของทั้ง 3 การ์ดเรียบร้อยแล้ว");
   });
 
   // Modal เลือกคอลัมน์ที่ต้องการแสดงในตาราง
@@ -3151,7 +3227,7 @@ document.addEventListener("DOMContentLoaded", () => {
       safeSetLocal("CALIB_DIR_EXPANDED", "true");
       applyDirectoryCollapseUI();
     }
-    selectedGroupValue = "ALL";
+    activeCardFilter = null;
     selectedSecondaryValue = "ALL";
     renderAnalytics();
     renderTable();
@@ -3235,7 +3311,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("dynamicColFilterSelect").addEventListener("change", (e) => {
-    selectedGroupValue = e.target.value;
+    const chosenVal = e.target.value;
+    if (chosenVal === "ALL") {
+      activeCardFilter = null;
+    } else {
+      const targetCol = (activeCardFilter && activeCardFilter.col) ? activeCardFilter.col : selectedGroupCol;
+      activeCardFilter = { col: targetCol, val: chosenVal };
+    }
     currentPage = 1;
     renderAnalytics();
     renderTable();
@@ -3291,7 +3373,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("resetFilterBtn").addEventListener("click", () => {
-    selectedGroupValue = "ALL";
+    activeCardFilter = null;
     selectedSecondaryValue = "ALL";
     currentSearch = "";
     sortState = { column: "", direction: "asc" };
@@ -3334,7 +3416,7 @@ document.addEventListener("DOMContentLoaded", () => {
     connectionSource = rawUrl;
     activeTabName = tabName;
     selectedGroupCol = "";
-    selectedGroupValue = "ALL";
+    activeCardFilter = null;
     selectedSecondaryCol = "";
     selectedSecondaryValue = "ALL";
 

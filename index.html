@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <title>TMC Calibration — Live Sheet Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2716%27 fill=%27%230f294a%27/%3E%3Cpath d=%27M16 14h12v8h-6v24h-6zm20 0h12v34h-6V22h-6z%27 fill=%27%23ffffff%27/%3E%3Cpath d=%27M22 28c4-6 10-6 14 0s10 6 14 0%27 fill=%27none%27 stroke=%27%2338bdf8%27 stroke-width=%273.5%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <script>
     (function () {
       if (!location.protocol.startsWith("http")) return;
-      var currentVer = "20261126022216";
+      var currentVer = "20261126145807";
       fetch("version.json?t=" + Date.now(), { cache: "no-store" })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
@@ -29,7 +29,8 @@
         .catch(function () {});
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=20261126022216">
+
+  <link rel="stylesheet" href="style.css?v=20261126145807">
 </head>
 <body>
 
@@ -418,7 +419,7 @@
               <p class="card-subtitle" id="breakdownCardSub">เลือกคอลัมน์และค่าที่ต้องการแสดงในการ์ดสรุปยอดได้เอง</p>
             </div>
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-              <select id="groupByColSelect" class="mini-pill-select" style="display: none;" title="เลือกคอลัมน์สำหรับสรุปยอด KPI"></select>
+              <select id="groupByColSelect" class="mini-pill-select" style="display: none;" title="เปลี่ยนคอลัมน์หลักพร้อมกันทั้ง 3 การ์ด (หรือเลือกแยกแต่ละการ์ดด้านล่าง)"></select>
               <button type="button" class="pill-outline-btn" id="customizeCardsBtn" style="display: none;" title="กำหนดค่าที่จะโชว์ในการ์ดทั้ง 3 ช่อง">กำหนดการ์ด</button>
               <button type="button" class="pill-outline-btn" id="jumpToAllJobsBtn">See all <span id="seeAllCount">0</span></button>
             </div>
@@ -829,26 +830,51 @@
       </div>
       <form id="customizeCardsForm">
         <div class="modal-body">
-          <p>เลือกคอลัมน์และค่าที่ต้องการให้นับจำนวนแสดงผลในการ์ดช่องที่ 2, 3 และ 4 (การ์ดช่องแรกจะแสดงจำนวนแถวทั้งหมดเสมอ)</p>
-          <div class="form-group" style="margin-bottom: 14px;">
-            <label for="modalGroupColSelect">1. เลือกคอลัมน์อ้างอิง (Column)</label>
-            <select id="modalGroupColSelect" class="clean-input"></select>
-          </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="cardSlot1Select">การ์ดช่องที่ 2 (สีฟ้า)</label>
-              <select id="cardSlot1Select" class="clean-input"></select>
-            </div>
-            <div class="form-group">
-              <label for="cardSlot2Select">การ์ดช่องที่ 3 (สีเขียวมิ้นต์)</label>
-              <select id="cardSlot2Select" class="clean-input"></select>
-            </div>
-            <div class="form-group full-width">
-              <label for="cardSlot3Select">การ์ดช่องที่ 4 (สีส้ม/แดง)</label>
-              <select id="cardSlot3Select" class="clean-input"></select>
+          <p>เลือก <strong>คอลัมน์ (Column)</strong> และ <strong>ค่า (Value)</strong> แยกอิสระสำหรับการ์ดแต่ละใบได้ตามต้องการ (การ์ดช่องแรกแสดงจำนวนแถวทั้งหมดเสมอ)</p>
+
+          <div class="slot-config-box">
+            <div class="slot-config-title"><span class="status-tag tag-blue">การ์ดช่องที่ 2</span></div>
+            <div class="form-grid" style="margin-bottom: 0;">
+              <div class="form-group">
+                <label for="cardSlot1ColSelect">คอลัมน์ (Column)</label>
+                <select id="cardSlot1ColSelect" class="clean-input"></select>
+              </div>
+              <div class="form-group">
+                <label for="cardSlot1Select">ค่าที่ต้องการนับ (Value)</label>
+                <select id="cardSlot1Select" class="clean-input"></select>
+              </div>
             </div>
           </div>
-          <div class="modal-hint">สามารถเปลี่ยนค่าได้ทันทีโดยคลิกที่มุมขวาบนของการ์ดแต่ละใบได้เช่นกัน</div>
+
+          <div class="slot-config-box">
+            <div class="slot-config-title"><span class="status-tag tag-mint">การ์ดช่องที่ 3</span></div>
+            <div class="form-grid" style="margin-bottom: 0;">
+              <div class="form-group">
+                <label for="cardSlot2ColSelect">คอลัมน์ (Column)</label>
+                <select id="cardSlot2ColSelect" class="clean-input"></select>
+              </div>
+              <div class="form-group">
+                <label for="cardSlot2Select">ค่าที่ต้องการนับ (Value)</label>
+                <select id="cardSlot2Select" class="clean-input"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="slot-config-box">
+            <div class="slot-config-title"><span class="status-tag tag-coral">การ์ดช่องที่ 4</span></div>
+            <div class="form-grid" style="margin-bottom: 0;">
+              <div class="form-group">
+                <label for="cardSlot3ColSelect">คอลัมน์ (Column)</label>
+                <select id="cardSlot3ColSelect" class="clean-input"></select>
+              </div>
+              <div class="form-group">
+                <label for="cardSlot3Select">ค่าที่ต้องการนับ (Value)</label>
+                <select id="cardSlot3Select" class="clean-input"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-hint">สามารถเปลี่ยนทั้งคอลัมน์และค่าได้ทันทีบนการ์ดแต่ละใบโดยไม่ต้องเปิดหน้าต่างนี้ก็ได้เช่นกัน</div>
         </div>
         <div class="modal-footer" style="justify-content: space-between;">
           <button type="button" class="pill-outline-btn" id="resetCustomCardsBtn">ค่าเริ่มต้นอัตโนมัติ</button>
@@ -961,6 +987,6 @@
   <!-- Toast Notification -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="app.js?v=20261126022216"></script>
+  <script src="app.js?v=20261126145807"></script>
 </body>
 </html>
