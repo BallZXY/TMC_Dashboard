@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://script.google.com https://docs.google.com https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://docs.google.com https://*.googleusercontent.com; base-uri 'self'; form-action 'self';">
   <title>TMC Calibration — Live Sheet Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2716%27 fill=%27%230f294a%27/%3E%3Cpath d=%27M16 14h12v8h-6v24h-6zm20 0h12v34h-6V22h-6z%27 fill=%27%23ffffff%27/%3E%3Cpath d=%27M22 28c4-6 10-6 14 0s10 6 14 0%27 fill=%27none%27 stroke=%27%2338bdf8%27 stroke-width=%273.5%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,7 +15,7 @@
   <script>
     (function () {
       if (!location.protocol.startsWith("http")) return;
-      var currentVer = "20261126150330";
+      var currentVer = "20261126152319";
       fetch("version.json?t=" + Date.now(), { cache: "no-store" })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
@@ -30,7 +31,7 @@
     })();
   </script>
 
-  <link rel="stylesheet" href="style.css?v=20261126150330">
+  <link rel="stylesheet" href="style.css?v=20261126152319">
 </head>
 <body>
 
@@ -987,6 +988,6 @@
   <!-- Toast Notification -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="app.js?v=20261126150330"></script>
+  <script src="app.js?v=20261126152319"></script>
 </body>
 </html>
