@@ -3,12 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>TMC Calibration — Live Sheet Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2716%27 fill=%27%230f294a%27/%3E%3Cpath d=%27M16 14h12v8h-6v24h-6zm20 0h12v34h-6V22h-6z%27 fill=%27%23ffffff%27/%3E%3Cpath d=%27M22 28c4-6 10-6 14 0s10 6 14 0%27 fill=%27none%27 stroke=%27%2338bdf8%27 stroke-width=%273.5%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <script>
+    (function () {
+      if (!location.protocol.startsWith("http")) return;
+      var currentVer = "20261126022216";
+      fetch("version.json?t=" + Date.now(), { cache: "no-store" })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (d && d.v && d.v !== currentVer && location.search.indexOf("v=" + d.v) === -1) {
+            var u = new URL(location.href);
+            u.searchParams.set("v", d.v);
+            fetch(u.toString(), { cache: "reload" }).finally(function () {
+              location.replace(u.toString());
+            });
+          }
+        })
+        .catch(function () {});
+    })();
+  </script>
+  <link rel="stylesheet" href="style.css?v=20261126022216">
 </head>
 <body>
 
@@ -940,6 +961,6 @@
   <!-- Toast Notification -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=20261126022216"></script>
 </body>
 </html>
