@@ -1823,7 +1823,7 @@ function renderSummaryView() {
       `;
       rowDiv.addEventListener("click", () => {
         selectedGroupCol = colName;
-        selectedGroupValue = val;
+        activeCardFilter = { col: colName, val };
         currentPage = 1;
         if (!isDirectoryExpanded) {
           isDirectoryExpanded = true;
@@ -1918,6 +1918,16 @@ function renderTable() {
     ? `Page ${currentPage}/${totalPages} (${startIdx + 1}–${endIdx} of ${totalFiltered}${scopeNote})`
     : `Showing 0 of ${getScopedRows().length} rows`;
 
+  const filterChip = document.getElementById("activeFilterChip");
+  if (filterChip) {
+    if (activeCardFilter && activeCardFilter.col) {
+      filterChip.style.display = "inline-flex";
+      filterChip.textContent = `${activeCardFilter.col}: ${activeCardFilter.val} ×`;
+    } else {
+      filterChip.style.display = "none";
+    }
+  }
+
   const canEditRows = Boolean(isAdminMode && connectionMode === "apps_script");
   const paginationBar = document.getElementById("paginationBar");
 
@@ -1962,8 +1972,9 @@ function renderTable() {
   const headerTr = document.createElement("tr");
   activeCols.forEach(colName => {
     const th = document.createElement("th");
-    th.className = "sortable";
-    const ind = sortState.column === colName ? (sortState.direction === "asc" ? "↑" : "↓") : "↕";
+    const isSorted = sortState.column === colName;
+    th.className = isSorted ? "sortable active-sort" : "sortable";
+    const ind = isSorted ? (sortState.direction === "asc" ? "↑" : "↓") : "↕";
     th.innerHTML = `${escapeHtml(colName)} <span class="sort-ind">${ind}</span>`;
     th.addEventListener("click", () => {
       if (sortState.column === colName) {
@@ -2485,6 +2496,16 @@ document.addEventListener("DOMContentLoaded", () => {
   refreshTotpTimers();
   setInterval(refreshTotpTimers, 1000);
 
+  // Password visibility toggle button on Step 1 Login Gate
+  const toggleGatePassBtn = document.getElementById("toggleGatePassBtn");
+  if (toggleGatePassBtn) {
+    toggleGatePassBtn.addEventListener("click", () => {
+      const passInp = document.getElementById("gatePasswordInput");
+      if (!passInp) return;
+      passInp.type = passInp.type === "password" ? "text" : "password";
+    });
+  }
+
   // STEP 1 Submit: Verify Password -> Advance to Step 2 (iPhone / Authenticator OTP screen)
   document.getElementById("gateStep1Form").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -2576,6 +2597,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       failedLoginAttempts = 0;
       step1PasswordVerified = false;
+      safeSetSession(GATE_SESSION_KEY, "true");
+      lastActivityTime = Date.now();
       if (errEl) errEl.style.display = "none";
       setLoginGateVisible(false);
       showToast("ยืนยันตัวตน 2 ชั้นสำเร็จ เข้าสู่ Dashboard แล้ว");
@@ -2642,7 +2665,9 @@ document.addEventListener("DOMContentLoaded", () => {
     step2RotatingKey = true;
     step2ActiveQrSecret = generateBase32Secret(16);
     document.getElementById("step2QrModeLabel").textContent = "Setup Key ใหม่ (ยืนยันด้วยรหัสจากเครื่องใหม่):";
-    document.getElementById("step2VerifySecretDisplay").textContent = step2ActiveQrSecret;
+    setSecretDisplayValue("step2VerifySecretDisplay", step2ActiveQrSecret, false);
+    const revStep2Btn = document.getElementById("revealStep2KeyBtn");
+    if (revStep2Btn) revStep2Btn.textContent = "แสดง Key";
     drawTotpQrMatrix(document.getElementById("step2VerifyQrCanvas"), buildOtpAuthUri(step2ActiveQrSecret));
     document.getElementById("step2QrHintText").textContent = "เมื่อสแกน Key ใหม่และกรอกรหัส 6 หลักสำเร็จ ระบบจะเปลี่ยนไปใช้ Key ใหม่ทันที";
     document.getElementById("gateOtpInput").value = "";
@@ -2673,8 +2698,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("regenFirstEnrollKeyBtn").addEventListener("click", () => {
     firstTimeEnrollSecret = generateBase32Secret(16);
-    const secEl = document.getElementById("firstEnrollSecretDisplay");
-    if (secEl) secEl.textContent = firstTimeEnrollSecret;
+    setSecretDisplayValue("firstEnrollSecretDisplay", firstTimeEnrollSecret, false);
+    const revFirstBtn = document.getElementById("revealFirstEnrollKeyBtn");
+    if (revFirstBtn) revFirstBtn.textContent = "แสดง Key";
     drawTotpQrMatrix(document.getElementById("firstEnrollQrCanvas"), buildOtpAuthUri(firstTimeEnrollSecret));
     const enrollInp = document.getElementById("firstEnrollOtpInput");
     if (enrollInp) {
@@ -3370,6 +3396,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.addEventListener("resize", syncTopTableSlider);
   }
+
+  document.getElementById("activeFilterChip").addEventListener("click", () => {
+    activeCardFilter = null;
+    currentPage = 1;
+    renderAnalytics();
+    renderTable();
+  });
 
   document.getElementById("resetFilterBtn").addEventListener("click", () => {
     activeCardFilter = null;

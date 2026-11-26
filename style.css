@@ -2837,3 +2837,73 @@ body:not(.is-admin) .admin-only-col {
 .admin-only-col {
   display: none !important;
 }
+
+/* v37 Polish: Password Eye Toggle, Active Filter Chip, Sticky Table Header & Active Sort */
+.password-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrap .clean-input {
+  padding-right: 40px;
+}
+
+.pass-eye-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--ink-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.pass-eye-btn:hover {
+  color: var(--sky-600);
+  background: var(--bg-sky-tint);
+}
+
+.active-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--navy-900);
+  color: #ffffff;
+  border: none;
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 500;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.active-filter-chip:hover {
+  background: var(--sky-600);
+}
+
+.table-scroll {
+  max-height: 68vh;
+  overflow-y: auto;
+}
+
+.mira-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg-card);
+  box-shadow: 0 1px 0 var(--border-light);
+}
+
+.mira-table th.active-sort {
+  color: var(--sky-700);
+  background: var(--bg-sky-tint);
+}

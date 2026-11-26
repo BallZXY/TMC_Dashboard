@@ -15,7 +15,7 @@
   <script>
     (function () {
       if (!location.protocol.startsWith("http")) return;
-      var currentVer = "20261126152319";
+      var currentVer = "20261126152746";
       fetch("version.json?t=" + Date.now(), { cache: "no-store" })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
@@ -31,7 +31,7 @@
     })();
   </script>
 
-  <link rel="stylesheet" href="style.css?v=20261126152319">
+  <link rel="stylesheet" href="style.css?v=20261126152746">
 </head>
 <body>
 
@@ -188,7 +188,12 @@
       <form id="gateStep1Form" class="login-form">
         <div class="form-group">
           <label for="gatePasswordInput">รหัสผ่าน (Password)</label>
-          <input type="password" id="gatePasswordInput" class="clean-input" required placeholder="กรอกรหัสผ่านเข้าใช้งาน" autocomplete="current-password">
+          <div class="password-input-wrap">
+            <input type="password" id="gatePasswordInput" class="clean-input" required placeholder="กรอกรหัสผ่านเข้าใช้งาน" autocomplete="current-password">
+            <button type="button" class="pass-eye-btn" id="toggleGatePassBtn" title="แสดง/ซ่อนรหัสผ่าน" aria-label="แสดงหรือซ่อนรหัสผ่าน">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
         </div>
 
         <div class="login-error-msg" id="gateStep1Error" style="display: none;"></div>
@@ -604,6 +609,7 @@
           <p class="card-subtitle">Universal search across all columns &bull; Dynamic sorting &amp; live sync</p>
         </div>
         <div class="table-meta-right">
+          <button type="button" class="active-filter-chip" id="activeFilterChip" style="display: none;" title="คลิกเพื่อล้างตัวกรองการ์ดนี้"></button>
           <span class="sub-count-pill" id="filteredCountBadge">Showing 0 of 0 rows</span>
           <button type="button" class="pill-outline-btn" id="selectTableColsBtn" disabled title="เลือกเปิด/ปิดคอลัมน์ที่จะแสดงในตาราง">เลือกคอลัมน์ (<span id="visibleColsCountBadge">0/0</span>)</button>
           <button type="button" class="pill-outline-btn" id="tableExportCsvBtn" disabled>Export CSV</button>
@@ -988,6 +994,6 @@
   <!-- Toast Notification -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="app.js?v=20261126152319"></script>
+  <script src="app.js?v=20261126152746"></script>
 </body>
 </html>
