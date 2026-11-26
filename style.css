@@ -2751,3 +2751,35 @@ body:not(.is-admin) .admin-only-col {
 .totp-btn-row {
   flex-wrap: wrap;
 }
+
+/* TMC Calibration Web Emblem Integration */
+.web-emblem-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(15, 41, 74, 0.08);
+}
+
+.web-emblem-badge.lg {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+}
+
+.login-emblem-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.login-emblem-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #0f294a;
+}
