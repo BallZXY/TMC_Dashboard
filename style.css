@@ -302,7 +302,7 @@ body {
 
 .bento-top-grid {
   display: grid;
-  grid-template-columns: 1.38fr 1fr;
+  grid-template-columns: minmax(0, 1.38fr) minmax(0, 1fr);
   gap: 20px;
 }
 
@@ -314,7 +314,7 @@ body {
 
 .bento-bottom-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
 }
 
@@ -381,7 +381,7 @@ body {
 /* 4 Sub-Metric Columns (Biomarkers to Watch Style) */
 .sub-metrics-4col {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -1060,7 +1060,7 @@ body {
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -1490,7 +1490,7 @@ body:not(.is-admin) .admin-only-col {
 
 .summary-highlights-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -1554,7 +1554,7 @@ body:not(.is-admin) .admin-only-col {
 
 .summary-2col-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 
@@ -2906,4 +2906,25 @@ body:not(.is-admin) .admin-only-col {
 .mira-table th.active-sort {
   color: var(--sky-700);
   background: var(--bg-sky-tint);
+}
+
+/* v38 Grid Overflow & Card Containment Fix */
+.bento-card,
+.sub-metric-item,
+.sum-stat-card,
+.rank-row-item,
+.plan-row-pill {
+  min-width: 0;
+}
+
+.sum-stat-card {
+  overflow: hidden;
+}
+
+.sum-stat-value {
+  font-size: clamp(1.15rem, 1.4vw, 1.45rem);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
