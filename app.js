@@ -930,7 +930,6 @@ let isSavingToSheet = false;
 
 let selectedGroupCol = safeGetLocal("GSHEET_GROUP_COL") || "";
 let activeCardFilter = null;
-let activeCardFilter = null; // { col: string, val: string } when a specific KPI card is clicked
 let customCardConfigs = []; // [{ col: string, val: string }, ...] for Card 2, Card 3, Card 4
 
 function loadCustomCardConfigs(sheetKey) {

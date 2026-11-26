@@ -14,7 +14,7 @@
   <script>
     (function () {
       if (!location.protocol.startsWith("http")) return;
-      var currentVer = "20261126145807";
+      var currentVer = "20261126150330";
       fetch("version.json?t=" + Date.now(), { cache: "no-store" })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
@@ -30,7 +30,7 @@
     })();
   </script>
 
-  <link rel="stylesheet" href="style.css?v=20261126145807">
+  <link rel="stylesheet" href="style.css?v=20261126150330">
 </head>
 <body>
 
@@ -987,6 +987,6 @@
   <!-- Toast Notification -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="app.js?v=20261126145807"></script>
+  <script src="app.js?v=20261126150330"></script>
 </body>
 </html>
